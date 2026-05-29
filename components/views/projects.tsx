@@ -309,16 +309,7 @@ export default function ProjectsPage() {
                     {/* Category Badge */}
                     <div className="absolute bottom-2 left-2">
                       <span className="inline-flex items-center cursor-pointer gap-0.5 px-1.5 py-1 rounded-sm text-[10px] font-medium bg-blue-500/20 text-blue-400 backdrop-blur-sm border border-blue-500/30">
-                        <AddToCart
-                          project={{
-                            id: project.id,
-                            project_name: project.project_name,
-                            price: project.price,
-                            image: project.image![0],
-                            project_client: project.project_client,
-                            qty: 1,
-                          }}
-                        />
+                        <AddToCart project={project} />
                       </span>
                     </div>
 
