@@ -118,8 +118,8 @@ const projectsData = [
     fullDescription:
       "Comprehensive platform for managing engineering projects, resources, and team collaboration with real-time analytics.",
     image:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=500&fit=crop",
+    logo: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=100&h=100&fit=crop",
     category: "Enterprise",
     features: [
       "Project tracking with Gantt charts",
@@ -141,8 +141,8 @@ const projectsData = [
     fullDescription:
       "All-in-one HRIS platform for employee management, payroll integration, and performance analytics with AI-powered insights.",
     image:
-      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&h=500&fit=crop",
-    logo: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=500&fit=crop",
+    logo: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=100&h=100&fit=crop",
     category: "HR Tech",
     features: [
       "Employee lifecycle management",
@@ -164,8 +164,8 @@ const projectsData = [
     fullDescription:
       "Next-generation educational platform connecting students with consultants, universities, and career opportunities.",
     image:
-      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&h=500&fit=crop",
-    logo: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1513258496099-48168024aec0?w=800&h=500&fit=crop",
+    logo: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=100&h=100&fit=crop",
     category: "EdTech",
     features: [
       "Student profiles & portfolios",
@@ -187,8 +187,8 @@ const projectsData = [
     fullDescription:
       "Enterprise-grade multi-tenant HRIS platform with role-based access, advanced analytics, and automated workflows.",
     image:
-      "https://images.unsplash.com/photo-1551434678-e076c2236a9a?w=800&h=500&fit=crop",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop",
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=500&fit=crop",
+    logo: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100&h=100&fit=crop",
     category: "Enterprise",
     features: [
       "Multi-tenant architecture",
