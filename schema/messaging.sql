@@ -5,8 +5,11 @@
 CREATE TABLE IF NOT EXISTS conversations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   title text,
+  topic text,
   created_at timestamptz DEFAULT now()
 );
+
+ALTER TABLE IF EXISTS conversations ADD COLUMN IF NOT EXISTS topic text;
 
 -- Participants
 CREATE TABLE IF NOT EXISTS conversation_participants (

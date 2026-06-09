@@ -9,7 +9,7 @@ export default function MessagesPage() {
   const conversationId = params?.get("conversationId");
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-10">
       <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[72vh]">
           <div className="lg:col-span-1 bg-card border border-border rounded-sm overflow-hidden">

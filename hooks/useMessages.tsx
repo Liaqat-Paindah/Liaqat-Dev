@@ -18,7 +18,7 @@ export const useMessages = (conversationId?: string | null) => {
       .then((r) => r.json())
       .then((data) => {
         if (!mounted) return;
-        setMessages(data || []);
+        setMessages(Array.isArray(data) ? data : []);
       })
       .finally(() => mounted && setLoading(false));
 
@@ -60,6 +60,11 @@ export const useMessages = (conversationId?: string | null) => {
 
     if (!res.ok) throw new Error("Failed to send");
     const data = await res.json();
+
+    if (data && typeof data === "object") {
+      setMessages((prev) => (Array.isArray(prev) ? [...prev, data] : [data]));
+    }
+
     return data;
   };
 

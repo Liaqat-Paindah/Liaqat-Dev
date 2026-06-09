@@ -305,6 +305,7 @@ const NexusTable = ({ data }: { data: Job[] }) => {
   const handleOpenConversation = async (rowData: any) => {
     // Try a few common field names for a participant id
     const candidateId = (rowData as any).applicant_id || (rowData as any).applicantId || (rowData as any).userId || (rowData as any).ownerId || (rowData as any).applicant?.id;
+    const topic = (rowData as any).jobType || (rowData as any).title || 'General';
 
     if (!candidateId) {
       console.warn('Could not find applicant id on row to start conversation');
@@ -315,7 +316,7 @@ const NexusTable = ({ data }: { data: Job[] }) => {
       const res = await fetch('/api/conversations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ participantIds: [user?.id, candidateId] }),
+        body: JSON.stringify({ participantIds: [user?.id, candidateId], topic }),
       });
 
       const data = await res.json();

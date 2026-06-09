@@ -13,12 +13,10 @@ export async function GET() {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get conversations where user is a participant
     const { data: convs, error } = await supabase
       .from('conversations')
-      .select(
-        `*, conversation_participants(*), messages(*, created_at)`
-      )
+      .select('id, title, topic, created_at, conversation_participants(user_id), messages(*)')
+      .eq('conversation_participants.user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ message: error.message }, { status: 500 });
@@ -31,6 +29,7 @@ export async function GET() {
       return {
         id: c.id,
         title: c.title,
+        topic: c.topic,
         participants: (c.conversation_participants || []).map((p: any) => p.user_id),
         lastMessage,
         unread,
@@ -58,6 +57,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const participantIds: string[] = body.participantIds || [];
     const title: string = body.title || null;
+    const topic: string | null = body.topic || null;
 
     if (!Array.isArray(participantIds) || participantIds.length < 2) {
       return NextResponse.json({ message: 'participantIds must be an array with at least 2 items' }, { status: 400 });
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     // This query fetches conversations that include any of the participant ids, then we filter in JS
     const { data: convCandidates, error } = await supabase
       .from('conversations')
-      .select('id, title, conversation_participants(user_id)');
+      .select('id, title, topic, conversation_participants(user_id)');
 
     if (error) return NextResponse.json({ message: error.message }, { status: 500 });
 
@@ -75,15 +75,17 @@ export async function POST(request: Request) {
 
     for (const c of convCandidates || []) {
       const parts = (c.conversation_participants || []).map((p: any) => p.user_id.toString()).sort();
-      if (parts.length === normalized.length && parts.every((v: string, i: number) => v === normalized[i])) {
-        return NextResponse.json({ id: c.id, existing: true });
+      const sameParticipants = parts.length === normalized.length && parts.every((v: string, i: number) => v === normalized[i]);
+      const sameTopic = topic ? c.topic === topic : !c.topic;
+      if (sameParticipants && sameTopic) {
+        return NextResponse.json({ id: c.id, existing: true, topic: c.topic });
       }
     }
 
     // Create conversation
     const { data: newConv, error: createError } = await supabase
       .from('conversations')
-      .insert({ title })
+      .insert({ title: title || topic, topic })
       .select()
       .single();
 
@@ -95,7 +97,7 @@ export async function POST(request: Request) {
 
     if (partError) return NextResponse.json({ message: partError.message }, { status: 500 });
 
-    return NextResponse.json({ id: newConv.id, existing: false });
+    return NextResponse.json({ id: newConv.id, existing: false, topic: newConv.topic });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });

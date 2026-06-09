@@ -21,7 +21,30 @@ export async function GET(request: Request, { params }: { params: { conversation
 
     if (error) return NextResponse.json({ message: error.message }, { status: 500 });
 
-    return NextResponse.json(data || []);
+    const messages = data || [];
+    const senderIds = Array.from(new Set(messages.map((message: any) => message.sender_id)));
+    let profiles: any[] = [];
+
+    if (senderIds.length) {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', senderIds);
+
+      if (profileError) {
+        console.error(profileError);
+      } else {
+        profiles = profileData || [];
+      }
+    }
+
+    const profileMap = new Map(profiles.map((profile: any) => [profile.id, profile]));
+    const enrichedMessages = messages.map((message: any) => ({
+      ...message,
+      sender: profileMap.get(message.sender_id) || null,
+    }));
+
+    return NextResponse.json(enrichedMessages);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: 'Server error' }, { status: 500 });
