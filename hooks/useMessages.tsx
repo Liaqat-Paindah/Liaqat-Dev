@@ -6,11 +6,13 @@ import { supabase } from '@/utils/supabase/supabase';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '@/components/provider/authContext';
 import { messageKeys } from '@/lib/messaging/keys';
 import { toast } from 'sonner';
 
 export const useMessages = (conversationId?: string | null) => {
   const queryClient = useQueryClient();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const markedReadRef = useRef<string | null>(null);
@@ -21,7 +23,7 @@ export const useMessages = (conversationId?: string | null) => {
       const response = await axios.get<Message[]>(`/api/messages/${conversationId}`);
       return response.data;
     },
-    enabled: Boolean(conversationId),
+    enabled: Boolean(conversationId) && isAuthenticated && !authLoading,
     refetchOnWindowFocus: false,
     staleTime: 30 * 1000,
   });

@@ -1,4 +1,3 @@
-import { getUserConversationIds } from '@/lib/messaging/access';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
@@ -15,17 +14,11 @@ export async function GET() {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const conversationIds = await getUserConversationIds(user.id);
-    if (!conversationIds.length) {
-      return NextResponse.json([]);
-    }
-
     const { data: convs, error } = await supabaseAdmin
       .from('conversations')
       .select(
         'id, title, topic, created_at, conversation_participants(user_id), messages(id, conversation_id, sender_id, body, metadata, read, created_at)'
       )
-      .in('id', conversationIds)
       .order('created_at', { ascending: false });
 
     if (error) return NextResponse.json({ message: error.message }, { status: 500 });
@@ -85,12 +78,7 @@ export async function POST(request: Request) {
       uniqueParticipantIds.push(user.id);
     }
 
-    if (uniqueParticipantIds.length < 1) {
-      return NextResponse.json({ message: 'At least one participant is required' }, { status: 400 });
-    }
-
-    const normalized = uniqueParticipantIds.slice().sort();
-    const normalizedTopic = topic || title;
+    const normalizedTopic = (topic || title || 'General').trim();
 
     const { data: convCandidates, error } = await supabaseAdmin
       .from('conversations')
@@ -99,21 +87,19 @@ export async function POST(request: Request) {
     if (error) return NextResponse.json({ message: error.message }, { status: 500 });
 
     for (const c of convCandidates || []) {
-      const parts = (c.conversation_participants || [])
-        .map((p: { user_id: string }) => p.user_id.toString())
-        .sort();
-      const sameParticipants =
-        parts.length === normalized.length && parts.every((value, index) => value === normalized[index]);
-      const existingTopic = c.topic || c.title;
-      const sameTopic = normalizedTopic ? existingTopic === normalizedTopic : !existingTopic;
-      if (sameParticipants && sameTopic) {
+      const existingTopic = (c.topic || c.title || '').trim();
+      if (existingTopic.toLowerCase() === normalizedTopic.toLowerCase()) {
+        await supabaseAdmin.from('conversation_participants').upsert(
+          { conversation_id: c.id, user_id: user.id },
+          { onConflict: 'conversation_id,user_id', ignoreDuplicates: true }
+        );
         return NextResponse.json({ id: c.id, existing: true, topic: c.topic || c.title });
       }
     }
 
     const { data: newConv, error: createError } = await supabaseAdmin
       .from('conversations')
-      .insert({ title: title || topic, topic: normalizedTopic })
+      .insert({ title: title || normalizedTopic, topic: normalizedTopic })
       .select('id, title, topic, created_at')
       .single();
 
@@ -121,7 +107,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: createError?.message || 'Could not create conversation' }, { status: 500 });
     }
 
-    const participants = normalized.map((id) => ({ conversation_id: newConv.id, user_id: id }));
+    const participants = uniqueParticipantIds.map((id) => ({ conversation_id: newConv.id, user_id: id }));
     const { error: partError } = await supabaseAdmin.from('conversation_participants').insert(participants);
 
     if (partError) {

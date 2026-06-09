@@ -1,5 +1,5 @@
 import { resolveRouteParams } from '@/lib/api/route-params';
-import { isConversationParticipant } from '@/lib/messaging/access';
+import { grantConversationAccess } from '@/lib/messaging/access';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
@@ -18,9 +18,9 @@ export async function POST(request: Request, context: RouteContext) {
     if (authError || !user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     if (!conversationId) return NextResponse.json({ message: 'Missing conversation id' }, { status: 400 });
 
-    const allowed = await isConversationParticipant(conversationId, user.id);
+    const allowed = await grantConversationAccess(conversationId, user.id);
     if (!allowed) {
-      return NextResponse.json({ message: 'Conversation not found or access denied' }, { status: 404 });
+      return NextResponse.json({ message: 'Conversation not found' }, { status: 404 });
     }
 
     const body = await request.json().catch(() => ({}));
