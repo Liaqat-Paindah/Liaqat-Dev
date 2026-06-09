@@ -2,17 +2,10 @@
 
 import { useConversations } from "@/hooks/useConversations";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export const ConversationList = ({ activeId }: { activeId?: string | null }) => {
   const router = useRouter();
-  const { data: conversations = [], isLoading, isError, refetch, isFetching } = useConversations();
-
-  useEffect(() => {
-    refetch();
-  }, [activeId, refetch]);
-
-  const showLoading = isLoading || isFetching;
+  const { data: conversations = [], isLoading, isError } = useConversations();
 
   return (
     <div className="h-full overflow-y-auto">
@@ -21,11 +14,11 @@ export const ConversationList = ({ activeId }: { activeId?: string | null }) => 
         <p className="text-xs text-muted-foreground mt-1">Open any topic to continue your conversation.</p>
       </div>
       <div className="divide-y">
-        {showLoading && conversations.length === 0 && (
+        {isLoading && conversations.length === 0 && (
           <div className="p-3 text-sm text-muted-foreground">Loading conversations...</div>
         )}
         {isError && <div className="p-3 text-sm text-destructive">Failed to load conversations.</div>}
-        {!showLoading && !isError && conversations.length === 0 && (
+        {!isLoading && !isError && conversations.length === 0 && (
           <div className="p-3 text-sm text-muted-foreground">No conversations yet.</div>
         )}
         {conversations.map((c) => (

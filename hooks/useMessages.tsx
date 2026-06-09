@@ -1,22 +1,19 @@
 'use client';
 
+import { clearConversationUnread, patchConversationListLastMessage } from '@/lib/messaging/cache';
 import type { Message } from '@/type/messaging';
 import { supabase } from '@/utils/supabase/supabase';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { messageKeys } from '@/lib/messaging/keys';
 import { toast } from 'sonner';
-import { conversationKeys } from './useConversations';
-
-export const messageKeys = {
-  all: ['messages'] as const,
-  byConversation: (conversationId: string) => [...messageKeys.all, conversationId] as const,
-};
 
 export const useMessages = (conversationId?: string | null) => {
   const queryClient = useQueryClient();
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const markedReadRef = useRef<string | null>(null);
 
   const messagesQuery = useQuery({
     queryKey: messageKeys.byConversation(conversationId || ''),
@@ -26,12 +23,13 @@ export const useMessages = (conversationId?: string | null) => {
     },
     enabled: Boolean(conversationId),
     refetchOnWindowFocus: false,
-    staleTime: 10 * 1000,
+    staleTime: 30 * 1000,
   });
 
   useEffect(() => {
     if (!conversationId) {
       setTypingUsers([]);
+      markedReadRef.current = null;
       return;
     }
 
@@ -46,7 +44,7 @@ export const useMessages = (conversationId?: string | null) => {
             if (current.some((message) => message.id === incoming.id)) return current;
             return [...current, incoming];
           });
-          queryClient.invalidateQueries({ queryKey: conversationKeys.list() });
+          patchConversationListLastMessage(queryClient, conversationId, incoming);
         }
       )
       .on(
@@ -85,42 +83,54 @@ export const useMessages = (conversationId?: string | null) => {
     };
   }, [conversationId, queryClient]);
 
-  const sendMessageMutation = useMutation({
-    mutationKey: ['sendMessage', conversationId],
-    mutationFn: async ({ body, metadata }: { body: string; metadata?: Record<string, unknown> }) => {
-      const response = await axios.post<Message>(`/api/messages/${conversationId}`, {
-        conversation_id: conversationId,
-        body,
-        metadata,
-      });
-      return response.data;
-    },
-    onSuccess: (savedMessage) => {
-      if (!conversationId) return;
-      queryClient.setQueryData<Message[]>(messageKeys.byConversation(conversationId), (current = []) => {
-        if (current.some((message) => message.id === savedMessage.id)) return current;
-        return [...current, savedMessage];
-      });
-      queryClient.invalidateQueries({ queryKey: conversationKeys.list() });
-    },
-    onError: (error: unknown) => {
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.message || error.message
-        : 'Failed to send message';
-      toast.error(message);
-    },
-  });
+  useEffect(() => {
+    if (!conversationId || markedReadRef.current === conversationId) return;
+    if (!messagesQuery.isSuccess) return;
 
-  const markReadMutation = useMutation({
-    mutationKey: ['markRead', conversationId],
-    mutationFn: async () => {
-      await axios.put(`/api/messages/${conversationId}`);
+    markedReadRef.current = conversationId;
+
+    axios
+      .put(`/api/messages/${conversationId}`)
+      .then(() => clearConversationUnread(queryClient, conversationId))
+      .catch(() => {
+        markedReadRef.current = null;
+      });
+  }, [conversationId, queryClient, messagesQuery.isSuccess]);
+
+  const [isSending, setIsSending] = useState(false);
+
+  const sendMessage = useCallback(
+    async (_conversation_id: string, body: string, metadata?: Record<string, unknown>) => {
+      if (!conversationId) throw new Error('Missing conversation id');
+
+      setIsSending(true);
+      try {
+        const response = await axios.post<Message>(`/api/messages/${conversationId}`, {
+          conversation_id: conversationId,
+          body,
+          metadata,
+        });
+        const savedMessage = response.data;
+
+        queryClient.setQueryData<Message[]>(messageKeys.byConversation(conversationId), (current = []) => {
+          if (current.some((message) => message.id === savedMessage.id)) return current;
+          return [...current, savedMessage];
+        });
+        patchConversationListLastMessage(queryClient, conversationId, savedMessage);
+
+        return savedMessage;
+      } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+          ? error.response?.data?.message || error.message
+          : 'Failed to send message';
+        toast.error(message);
+        throw error;
+      } finally {
+        setIsSending(false);
+      }
     },
-    onSuccess: () => {
-      if (!conversationId) return;
-      queryClient.invalidateQueries({ queryKey: conversationKeys.list() });
-    },
-  });
+    [conversationId, queryClient]
+  );
 
   const setTyping = useCallback(async (conversation_id: string, isTyping: boolean) => {
     try {
@@ -130,31 +140,14 @@ export const useMessages = (conversationId?: string | null) => {
     }
   }, []);
 
-  const sendMessage = useCallback(
-    async (conversation_id: string, body: string, metadata?: Record<string, unknown>) => {
-      if (!conversation_id) throw new Error('Missing conversation id');
-      return sendMessageMutation.mutateAsync({ body, metadata });
-    },
-    [sendMessageMutation]
-  );
-
-  const markRead = useCallback(
-    async (conversation_id: string) => {
-      if (!conversation_id) return;
-      await markReadMutation.mutateAsync();
-    },
-    [markReadMutation]
-  );
-
   return {
     messages: messagesQuery.data ?? [],
     loading: messagesQuery.isLoading,
     error: messagesQuery.error,
     sendMessage,
-    markRead,
     typingUsers,
     setTyping,
-    isSending: sendMessageMutation.isPending,
+    isSending,
   };
 };
 

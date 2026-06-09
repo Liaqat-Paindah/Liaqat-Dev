@@ -6,11 +6,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'sonner';
 
-export const conversationKeys = {
-  all: ['conversations'] as const,
-  list: () => [...conversationKeys.all, 'list'] as const,
-  detail: (conversationId: string) => [...conversationKeys.all, 'detail', conversationId] as const,
-};
+import { conversationKeys } from '@/lib/messaging/keys';
+
+export { conversationKeys };
 
 export const useConversations = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -22,9 +20,10 @@ export const useConversations = () => {
       return response.data;
     },
     enabled: isAuthenticated && !loading,
-    refetchOnWindowFocus: true,
-    refetchOnMount: 'always',
-    staleTime: 10 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 60 * 1000,
+    retry: 1,
   });
 };
 
@@ -39,7 +38,8 @@ export const useConversation = (conversationId?: string | null) => {
     },
     enabled: Boolean(conversationId) && isAuthenticated && !loading,
     refetchOnWindowFocus: false,
-    staleTime: 30 * 1000,
+    staleTime: 60 * 1000,
+    retry: 1,
   });
 };
 

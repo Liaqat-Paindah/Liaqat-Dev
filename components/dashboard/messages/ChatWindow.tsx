@@ -7,15 +7,10 @@ import MessageInput from "./MessageInput";
 import { useAuth } from "@/components/provider/authContext";
 
 export const ChatWindow = ({ conversationId }: { conversationId?: string | null }) => {
-  const { messages, loading, sendMessage, markRead, typingUsers, setTyping, isSending, error } = useMessages(conversationId || null);
+  const { messages, loading, sendMessage, typingUsers, setTyping, isSending, error } = useMessages(conversationId || null);
   const { data: conversation } = useConversation(conversationId);
   const { user } = useAuth();
   const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!conversationId) return;
-    markRead(conversationId).catch(() => {});
-  }, [conversationId, markRead]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'auto' });
