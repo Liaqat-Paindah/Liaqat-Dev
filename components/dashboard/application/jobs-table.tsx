@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/provider/authContext";
+import { useCreateConversation } from "@/hooks/useConversations";
 import { useRouter } from "next/navigation";
 
 export type Job = {
@@ -301,25 +302,30 @@ const NexusTable = ({ data }: { data: Job[] }) => {
 
   const { user } = useAuth();
   const router = useRouter();
+  const createConversation = useCreateConversation();
 
   const handleOpenConversation = async (rowData: any) => {
-    // Try a few common field names for a participant id
-    const candidateId = (rowData as any).applicant_id || (rowData as any).applicantId || (rowData as any).userId || (rowData as any).ownerId || (rowData as any).applicant?.id;
-    const topic = (rowData as any).jobType || (rowData as any).title || 'General';
+    if (!user?.id) return;
 
-    if (!candidateId) {
-      console.warn('Could not find applicant id on row to start conversation');
-      return;
-    }
+    const topic = (rowData as any).jobType || (rowData as any).title || 'General';
+    const title = (rowData as any).title || topic;
+    const otherParticipantId =
+      (rowData as any).applicant_id ||
+      (rowData as any).applicantId ||
+      (rowData as any).ownerId ||
+      (rowData as any).applicant?.id;
+
+    const participantIds = otherParticipantId && otherParticipantId !== user.id
+      ? [user.id, otherParticipantId]
+      : [user.id];
 
     try {
-      const res = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ participantIds: [user?.id, candidateId], topic }),
+      const data = await createConversation.mutateAsync({
+        participantIds,
+        topic,
+        title,
       });
 
-      const data = await res.json();
       if (data?.id) {
         router.push(`/dashboard/messages?conversationId=${data.id}`);
       }

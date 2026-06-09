@@ -1,16 +1,18 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import { useConversations } from "@/hooks/useConversations";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export const ConversationList = ({ activeId }: { activeId?: string | null }) => {
-  const [conversations, setConversations] = useState<any[]>([]);
   const router = useRouter();
+  const { data: conversations = [], isLoading, isError, refetch, isFetching } = useConversations();
 
   useEffect(() => {
-    fetch('/api/conversations')
-      .then((r) => r.json())
-      .then((data) => setConversations(data || []));
-  }, []);
+    refetch();
+  }, [activeId, refetch]);
+
+  const showLoading = isLoading || isFetching;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -19,6 +21,13 @@ export const ConversationList = ({ activeId }: { activeId?: string | null }) => 
         <p className="text-xs text-muted-foreground mt-1">Open any topic to continue your conversation.</p>
       </div>
       <div className="divide-y">
+        {showLoading && conversations.length === 0 && (
+          <div className="p-3 text-sm text-muted-foreground">Loading conversations...</div>
+        )}
+        {isError && <div className="p-3 text-sm text-destructive">Failed to load conversations.</div>}
+        {!showLoading && !isError && conversations.length === 0 && (
+          <div className="p-3 text-sm text-muted-foreground">No conversations yet.</div>
+        )}
         {conversations.map((c) => (
           <button
             key={c.id}
@@ -37,7 +46,11 @@ export const ConversationList = ({ activeId }: { activeId?: string | null }) => 
               <div className="text-sm font-medium truncate">{c.title || c.topic || 'Conversation'}</div>
               <div className="text-xs text-muted-foreground truncate mt-1">{c.lastMessage?.body || 'Open the topic to view chat history'}</div>
             </div>
-            {c.unread > 0 && <div className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-2 py-0.5">{c.unread}</div>}
+            {c.unread > 0 && (
+              <div className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-2 py-0.5">
+                {c.unread}
+              </div>
+            )}
           </button>
         ))}
       </div>
