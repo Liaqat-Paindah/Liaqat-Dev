@@ -88,7 +88,7 @@ const UserLinks = [
     icon: FileText,
   },
   {
-    to: "/messages",
+    to: "/dashboard/messages",
     label: "Messages",
     description: "Conversations & Updates",
     icon: MessageSquare,
