@@ -38,6 +38,8 @@ import {
   Bookmark,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/components/provider/authContext";
+import { useRouter } from "next/navigation";
 
 export type Job = {
   id: number;
@@ -297,6 +299,34 @@ const NexusTable = ({ data }: { data: Job[] }) => {
     globalFilterFn: "auto",
   });
 
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleOpenConversation = async (rowData: any) => {
+    // Try a few common field names for a participant id
+    const candidateId = (rowData as any).applicant_id || (rowData as any).applicantId || (rowData as any).userId || (rowData as any).ownerId || (rowData as any).applicant?.id;
+
+    if (!candidateId) {
+      console.warn('Could not find applicant id on row to start conversation');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participantIds: [user?.id, candidateId] }),
+      });
+
+      const data = await res.json();
+      if (data?.id) {
+        router.push(`/dashboard/messages?conversationId=${data.id}`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -463,6 +493,7 @@ const NexusTable = ({ data }: { data: Job[] }) => {
                         ? "bg-muted/20"
                         : "hover:bg-muted/10"
                   }`}
+                  onClick={() => handleOpenConversation(row.original)}
                 >
                   {/* Row highlight bar */}
                   <td className="absolute inset-y-0 left-0 w-0.5 bg-transparent transition-colors group-hover:bg-primary/60 dark:group-hover:bg-cyan-400/60" />
