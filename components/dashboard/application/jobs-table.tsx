@@ -38,6 +38,9 @@ import {
   Bookmark,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/components/provider/authContext";
+import { useCreateConversation } from "@/hooks/useConversations";
+import { useRouter } from "next/navigation";
 
 export type Job = {
   id: number;
@@ -297,6 +300,40 @@ const NexusTable = ({ data }: { data: Job[] }) => {
     globalFilterFn: "auto",
   });
 
+  const { user } = useAuth();
+  const router = useRouter();
+  const createConversation = useCreateConversation();
+
+  const handleOpenConversation = async (rowData: any) => {
+    if (!user?.id) return;
+
+    const topic = (rowData as any).jobType || (rowData as any).title || 'General';
+    const title = (rowData as any).title || topic;
+    const otherParticipantId =
+      (rowData as any).applicant_id ||
+      (rowData as any).applicantId ||
+      (rowData as any).ownerId ||
+      (rowData as any).applicant?.id;
+
+    const participantIds = otherParticipantId && otherParticipantId !== user.id
+      ? [user.id, otherParticipantId]
+      : [user.id];
+
+    try {
+      const data = await createConversation.mutateAsync({
+        participantIds,
+        topic,
+        title,
+      });
+
+      if (data?.id) {
+        router.push(`/dashboard/messages?conversationId=${data.id}`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -463,6 +500,7 @@ const NexusTable = ({ data }: { data: Job[] }) => {
                         ? "bg-muted/20"
                         : "hover:bg-muted/10"
                   }`}
+                  onClick={() => handleOpenConversation(row.original)}
                 >
                   {/* Row highlight bar */}
                   <td className="absolute inset-y-0 left-0 w-0.5 bg-transparent transition-colors group-hover:bg-primary/60 dark:group-hover:bg-cyan-400/60" />

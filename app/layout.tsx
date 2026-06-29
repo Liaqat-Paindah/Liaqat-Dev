@@ -4,7 +4,6 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "./providers";
 import AuthProvider from "@/components/provider/authContext";
-import Footer from "@/components/views/footer";
 
 export const metadata: Metadata = {
   title: {
@@ -30,7 +29,6 @@ export default function RootLayout({
           <Providers>
             <Navbar />
             {children}
-            <Footer></Footer>
           </Providers>
         </AuthProvider>
       </body>
