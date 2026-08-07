@@ -31,11 +31,17 @@ import {
 } from "lucide-react";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { useAuth } from "./provider/authContext";
 import { supabase } from "@/utils/supabase/supabase";
 
-// Advanced Navigation Structure with Nexus DNA
+// Advanced Navigation Structure with  DNA
 export const navLinks = [
   {
     to: "/",
@@ -113,17 +119,23 @@ const particleConfigs = Array.from({ length: 50 }, (_, index) => ({
 }));
 
 // Advanced 3D Tilt Effect Component
-const TiltCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+const TiltCard = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  
+
   const mouseXSpring = useSpring(x, { stiffness: 400, damping: 30 });
   const mouseYSpring = useSpring(y, { stiffness: 400, damping: 30 });
-  
+
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7deg", "-7deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7deg", "7deg"]);
-  
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
@@ -136,12 +148,12 @@ const TiltCard = ({ children, className = "" }: { children: React.ReactNode; cla
     x.set(xPct);
     y.set(yPct);
   };
-  
+
   const handleMouseLeave = () => {
     x.set(0);
     y.set(0);
   };
-  
+
   return (
     <motion.div
       ref={ref}
@@ -160,7 +172,7 @@ const TiltCard = ({ children, className = "" }: { children: React.ReactNode; cla
 };
 
 // Advanced Particle System
-const NexusParticleField = () => {
+const UserSection = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particleConfigs.map((particle) => {
@@ -197,7 +209,7 @@ const NexusParticleField = () => {
 // Glowing Orb Effect
 const GlowingOrb = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
@@ -205,7 +217,7 @@ const GlowingOrb = () => {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
-  
+
   return (
     <motion.div
       className="fixed pointer-events-none z-50"
@@ -240,7 +252,7 @@ export const Navbar = () => {
   const [notificationCount, setNotificationCount] = useState(3);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
-  
+
   // Handle scroll effect with threshold
   useEffect(() => {
     const handleScroll = () => {
@@ -249,24 +261,27 @@ export const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   // Handle click outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-  
+
   // Close on route change
   useEffect(() => {
     setMobileOpen(false);
     setUserMenuOpen(false);
   }, [pathname]);
-  
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut({ scope: "local" });
     if (!error) {
@@ -276,7 +291,7 @@ export const Navbar = () => {
       router.refresh();
     }
   };
-  
+
   // Animated text for logo
   const logoTextVariants = {
     initial: { opacity: 0, y: -20 },
@@ -286,11 +301,11 @@ export const Navbar = () => {
       transition: { duration: 0.3 },
     },
   };
-  
+
   return (
     <>
       <GlowingOrb />
-      
+
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-700 ${
           scrolled
@@ -311,15 +326,16 @@ export const Navbar = () => {
             ease: "easeInOut",
           }}
         />
-        
+
         {/* Noise Texture */}
-        <div className="absolute inset-0 opacity-5 pointer-events-none" 
+        <div
+          className="absolute inset-0 opacity-5 pointer-events-none"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
             backgroundRepeat: "repeat",
           }}
         />
-        
+
         <div className="container mx-auto flex h-16 items-center justify-between px-4 relative">
           {/* Advanced Logo with 3D Effect */}
           <TiltCard className="relative">
@@ -339,7 +355,7 @@ export const Navbar = () => {
                 }}
                 transition={{ duration: 0.3 }}
               />
-              
+
               <motion.span
                 variants={logoTextVariants}
                 initial="initial"
@@ -347,9 +363,12 @@ export const Navbar = () => {
                 whileHover="hover"
                 className="relative font-display text-xl font-bold bg-linear-to-r from-white via-white to-gray-400 bg-clip-text text-transparent"
               >
-                Liaqat <span className="text-transparent bg-linear-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text">Dev</span>
+                Liaqat{" "}
+                <span className="text-transparent bg-linear-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text">
+                  Dev
+                </span>
               </motion.span>
-              
+
               {/* Animated underline with pulse */}
               <motion.div
                 className="absolute -bottom-1 left-0 right-0 h-0.5 bg-linear-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full"
@@ -357,7 +376,7 @@ export const Navbar = () => {
                 whileHover={{ scaleX: 1 }}
                 transition={{ duration: 0.3 }}
               />
-              
+
               {/* Pulse Ring */}
               <motion.div
                 className="absolute -inset-2 rounded-full border border-cyan-500/30"
@@ -373,7 +392,7 @@ export const Navbar = () => {
               />
             </Link>
           </TiltCard>
-          
+
           {/* Desktop Navigation with Advanced Effects */}
           <div className="hidden lg:flex items-center gap-1">
             {(user ? UserLinks : navLinks).map((link, index) => {
@@ -410,10 +429,10 @@ export const Navbar = () => {
                         }}
                       />
                     )}
-                    
+
                     {/* Label */}
                     <span className="relative z-10">{link.label}</span>
-                    
+
                     {/* Active Indicator Dot */}
                     {active && (
                       <motion.div
@@ -426,7 +445,7 @@ export const Navbar = () => {
                         }}
                       />
                     )}
-                    
+
                     {/* Hover Glow Effect */}
                     {hoveredLink === link.to && !active && (
                       <motion.div
@@ -439,7 +458,7 @@ export const Navbar = () => {
                       />
                     )}
                   </motion.div>
-                  
+
                   {/* Advanced Tooltip with Arrow */}
                   <AnimatePresence>
                     {hoveredLink === link.to && (
@@ -467,12 +486,9 @@ export const Navbar = () => {
               );
             })}
           </div>
-          
+
           {/* Right Section with Advanced Components */}
           <div className="hidden lg:flex items-center gap-3">
-    
-            
-            
             {user ? (
               <>
                 {/* Advanced Notification Center */}
@@ -484,11 +500,14 @@ export const Navbar = () => {
                     whileTap={{ scale: 0.95 }}
                     className="relative p-2 rounded-sm hover:bg-white/5 transition-all"
                     animate={{
-                      boxShadow: notificationCount > 0 ? "0 0 10px rgba(6, 182, 212, 0.5)" : "none",
+                      boxShadow:
+                        notificationCount > 0
+                          ? "0 0 10px rgba(6, 182, 212, 0.5)"
+                          : "none",
                     }}
                   >
                     <Bell className="h-5 w-5 text-gray-400 group-hover:text-cyan-400 transition-colors" />
-                    
+
                     {/* Animated Notification Badge */}
                     {notificationCount > 0 && (
                       <motion.div
@@ -507,7 +526,7 @@ export const Navbar = () => {
                       </motion.div>
                     )}
                   </motion.button>
-                  
+
                   {/* Notification Preview on Hover */}
                   <AnimatePresence>
                     {notificationCount > 0 && (
@@ -521,8 +540,13 @@ export const Navbar = () => {
                         </div>
                         <div className="p-2">
                           {[1, 2, 3].map((i) => (
-                            <div key={i} className="px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
-                              <p className="text-xs text-gray-300">New notification {i}</p>
+                            <div
+                              key={i}
+                              className="px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                            >
+                              <p className="text-xs text-gray-300">
+                                New notification {i}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -530,7 +554,7 @@ export const Navbar = () => {
                     )}
                   </AnimatePresence>
                 </motion.div>
-                
+
                 {/* Advanced Create Button */}
                 <Link
                   href="/dashboard/jobs/create"
@@ -546,12 +570,12 @@ export const Navbar = () => {
                       className="absolute inset-0 bg-linear-to-r from-cyan-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       style={{ filter: "blur(10px)" }}
                     />
-                    
+
                     <PlusCircle className="h-4 w-4 relative z-10 group-hover:rotate-90 transition-transform duration-300" />
                     <span className="relative z-10">Post Job</span>
                   </motion.div>
                 </Link>
-                
+
                 {/* Advanced User Menu */}
                 <div className="relative" ref={userMenuRef}>
                   <motion.button
@@ -577,7 +601,7 @@ export const Navbar = () => {
                       <div className="relative h-8 w-8 rounded-full bg-linear-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center text-white font-medium shadow-lg">
                         {user.email?.[0].toUpperCase() || "U"}
                       </div>
-                      
+
                       {/* Online Status */}
                       <motion.div
                         className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-black"
@@ -590,14 +614,14 @@ export const Navbar = () => {
                         }}
                       />
                     </div>
-                    
+
                     <ChevronDown
                       className={`h-3.5 w-3.5 text-gray-400 transition-all duration-300 ${
                         userMenuOpen ? "rotate-180" : "group-hover:rotate-12"
                       }`}
                     />
                   </motion.button>
-                  
+
                   {/* Advanced Dropdown Menu */}
                   <AnimatePresence>
                     {userMenuOpen && (
@@ -605,7 +629,11 @@ export const Navbar = () => {
                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{ duration: 0.2, type: "spring", stiffness: 400 }}
+                        transition={{
+                          duration: 0.2,
+                          type: "spring",
+                          stiffness: 400,
+                        }}
                         className="absolute top-full right-0 mt-2 w-72 rounded-sm bg-gray-900/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden z-50"
                       >
                         {/* User Info Header with linear */}
@@ -621,12 +649,12 @@ export const Navbar = () => {
                               ease: "linear",
                             }}
                           />
-                          
+
                           <div className="relative">
                             <p className="text-sm font-bold bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
                               {profile?.first_name && profile?.last_name
                                 ? `${profile.first_name} ${profile.last_name}`
-                                : user.email?.split('@')[0] || "Nexus User"}
+                                : user.email?.split("@")[0] || "User"}
                             </p>
                             <p className="text-xs text-gray-400 truncate mt-1">
                               {user.email}
@@ -636,13 +664,17 @@ export const Navbar = () => {
                                 <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                                 <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-green-500 animate-ping" />
                               </div>
-                              <span className="text-xs text-green-400 font-medium">Active Now</span>
+                              <span className="text-xs text-green-400 font-medium">
+                                Active Now
+                              </span>
                               <div className="w-px h-3 bg-white/10 mx-1" />
-                              <span className="text-xs text-gray-400">Nexus Pro</span>
+                              <span className="text-xs text-gray-400">
+                                User{" "}
+                              </span>
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Menu Items */}
                         <div className="p-2">
                           <button
@@ -685,7 +717,7 @@ export const Navbar = () => {
               </motion.div>
             )}
           </div>
-          
+
           {/* Mobile Controls */}
           <div className="flex lg:hidden items-center gap-2">
             {user && (
@@ -717,7 +749,7 @@ export const Navbar = () => {
           </div>
         </div>
       </nav>
-      
+
       {/* Advanced Mobile Menu with Slide-in Animation */}
       <AnimatePresence>
         {mobileOpen && (
@@ -730,10 +762,10 @@ export const Navbar = () => {
           >
             {/* Mobile Menu Header with Particle Effect */}
             <div className="relative p-4 border-b border-white/10 bg-linear-to-r from-cyan-500/5 via-blue-500/5 to-purple-500/5">
-              <NexusParticleField />
-              <p className="text-xs text-cyan-400 font-mono">NEXUS_NAV</p>
+              <UserSection />
+              <p className="text-xs text-cyan-400 font-mono">Liaqat Dev</p>
             </div>
-            
+
             <div className="p-4 flex flex-col gap-2">
               {user ? (
                 <>
@@ -744,7 +776,10 @@ export const Navbar = () => {
                     className="flex items-center gap-3 p-3 mb-3 rounded-sm bg-linear-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 border border-white/10"
                   >
                     <div className="relative">
-                      <div className="absolute inset-0 rounded-full bg-linear-to-r from-cyan-500 to-purple-500 animate-spin" style={{ animationDuration: "2s" }} />
+                      <div
+                        className="absolute inset-0 rounded-full bg-linear-to-r from-cyan-500 to-purple-500 animate-spin"
+                        style={{ animationDuration: "2s" }}
+                      />
                       <div className="relative h-12 w-12 rounded-full bg-linear-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center text-white font-medium shadow-lg">
                         {user.email?.[0].toUpperCase() || "U"}
                       </div>
@@ -753,16 +788,18 @@ export const Navbar = () => {
                       <p className="text-sm font-bold text-white truncate">
                         {profile?.first_name && profile?.last_name
                           ? `${profile.first_name} ${profile.last_name}`
-                          : user.email?.split('@')[0] || "Nexus User"}
+                          : user.email?.split("@")[0] || "User"}
                       </p>
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {user.email}
+                      </p>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                         <span className="text-xs text-green-400">Active</span>
                       </div>
                     </div>
                   </motion.div>
-                  
+
                   {/* Navigation Links with Stagger Animation */}
                   {UserLinks.map((link, index) => (
                     <motion.div
@@ -812,9 +849,9 @@ export const Navbar = () => {
                   ))}
                 </>
               )}
-              
+
               <div className="border-t border-white/10 my-3" />
-              
+
               {!user ? (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -826,7 +863,7 @@ export const Navbar = () => {
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center justify-center px-3 py-3 rounded-sm text-sm font-medium bg-linear-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 border border-cyan-500/30 text-cyan-400 transition-all"
                   >
-                    <span>Login to Nexus</span>
+                    <span>Login to Liaqat Dev</span>
                     <Sparkles className="h-4 w-4 ml-2" />
                   </Link>
                 </motion.div>
@@ -847,9 +884,9 @@ export const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Advanced Particle Background */}
-      <NexusParticleField />
+      <UserSection />
     </>
   );
 };
