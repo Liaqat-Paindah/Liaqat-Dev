@@ -4,14 +4,14 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "./providers";
 import AuthProvider from "@/components/provider/authContext";
+import { UserProvider } from "@/components/provider/userContext";
 
 export const metadata: Metadata = {
   title: {
     default: "Liaqat Dev",
     template: "%s | Liaqat Dev",
   },
-  description:
-    "Liaqat Dev built with Next.js 16.",
+  description: "Liaqat Dev built with Next.js 16.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -28,7 +28,8 @@ export default function RootLayout({
         <AuthProvider>
           <Providers>
             <Navbar />
-            {children}
+
+            <UserProvider>{children}</UserProvider>
           </Providers>
         </AuthProvider>
       </body>

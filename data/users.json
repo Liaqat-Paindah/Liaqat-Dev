@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "name": "Ahmad Rahimi",
+    "email": "ahmad@example.com",
+    "age": 28,
+    "role": "Developer",
+    "country": "Afghanistan",
+    "salary": 1200,
+    "active": true
+  },
+  {
+    "id": 2,
+    "name": "Sara Mohammadi",
+    "email": "sara@example.com",
+    "age": 25,
+    "role": "Designer",
+    "country": "Iran",
+    "salary": 1000,
+    "active": true
+  },
+  {
+    "id": 3,
+    "name": "John Smith",
+    "email": "john@example.com",
+    "age": 32,
+    "role": "Manager",
+    "country": "USA",
+    "salary": 2500,
+    "active": false
+  },
+  {
+    "id": 4,
+    "name": "Maria Garcia",
+    "email": "maria@example.com",
+    "age": 30,
+    "role": "Developer",
+    "country": "Spain",
+    "salary": 1800,
+    "active": true
+  },
+  {
+    "id": 5,
+    "name": "Ali Khan",
+    "email": "ali@example.com",
+    "age": 27,
+    "role": "Tester",
+    "country": "Pakistan",
+    "salary": 900,
+    "active": true
+  },
+  {
+    "id": 6,
+    "name": "Emma Wilson",
+    "email": "emma@example.com",
+    "age": 35,
+    "role": "Manager",
+    "country": "UK",
+    "salary": 3000,
+    "active": false
+  }
+]
